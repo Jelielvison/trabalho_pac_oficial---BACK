@@ -356,5 +356,112 @@ def deletar_evento(id):
         print(f"Erro ao excluir evento: {e}")
         return jsonify({'error': 'Erro ao excluir evento'}), 500
 
+#CRUD DOS VOLUNTÁRIOS
+@app.route('/listar-voluntarios')
+def index():
+    conexao = conectar_bd()
+    if not conexao:
+        return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
+
+    try:
+        cursor = conexao.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM voluntarios")
+        voluntarios = cursor.fetchall()
+        cursor.close()
+        conexao.close()
+        return render_template('index.html', voluntarios=voluntarios)
+    except Error as e:
+        print(f"Erro ao obter voluntarios: {e}")
+        return jsonify({'error': 'Erro ao obter voluntarios'}), 500
+    
+@app.route('/cadastrar-voluntarios', methods=['POST'])
+def criar_voluntarios():
+    conexao = conectar_bd()
+    if not conexao:
+        return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
+
+    nomeVolun = request.form.get('nomeVoluntario')
+    telefoneVolun = request.form.get('telefoneVoluntario')
+    emailVolun = request.form.get('emailVoluntario')
+    pinVolun = request.form.get('pinVoluntario')
+    descAjudaVolun = request.form.get('descricaoAjudaVoluntario')
+
+    if not (nomeVolun and telefoneVolun and emailVolun and pinVolun and descAjudaVolun):
+        return jsonify({'error': 'Todos os campos são obrigatórios!'}), 400
+
+    try:
+        cursor = conexao.cursor()
+        cursor.execute("INSERT INTO voluntarios (nomeVoluntario, telefoneVoluntario, emailVoluntario, pinVoluntario, descricaoAjudaVoluntario) VALUES (%s, %s, %s, %s, %s)", (nomeVolun, telefoneVolun, emailVolun, pinVolun, descAjudaVolun))
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+
+        return jsonify({'message': 'Voluntario criado com sucesso!'}), 201
+    except Error as e:
+        print(f"Erro ao criar voluntario: {e}")
+        return jsonify({'error': 'Erro ao criar voluntario'}), 500
+    
+@app.route('/buscar-voluntarios', methods=['GET'])
+def obter_voluntarios():
+    conexao = conectar_bd()
+    if not conexao:
+        return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
+
+    try:
+        cursor = conexao.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM voluntarios")
+        voluntarios = cursor.fetchall()
+        cursor.close()
+        conexao.close()
+        return jsonify(voluntarios), 200
+    except Error as e:
+        print(f"Erro ao obter voluntarios: {e}")
+        return jsonify({'error': 'Erro ao obter voluntarios'}), 500
+    
+@app.route('/atualizar-voluntario/<int:id>', methods=['PUT'])
+def atualizar_voluntarios(idVoluntario):
+    conexao = conectar_bd()
+    if not conexao:
+        return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
+
+    nomeVolun = request.form.get('nomeVoluntario')
+    telefoneVolun = request.form.get('telefoneVoluntario')
+    emailVolun = request.form.get('emailVoluntario')
+    pinVolun = request.form.get('pinVoluntario')
+    descAjudaVolun = request.form.get('descricaoAjudaVoluntario')
+
+    if not (nomeVolun and telefoneVolun and emailVolun and pinVolun and descAjudaVolun):
+        return jsonify({'error': 'Todos os campos são obrigatórios!'}), 400
+
+    try:
+        cursor = conexao.cursor()
+        cursor.execute("UPDATE voluntarios SET nomeVolun = %s, telefoneVolun = %s, emailVolun = %s, pinVolun = %s, descAjudaVolun = %s WHERE idVoluntario = %s", (nomeVolun, telefoneVolun, emailVolun, pinVolun, descAjudaVolun, idVoluntario))
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+
+        return jsonify({'message': 'Voluntario atualizado com sucesso!'}), 201
+    except Error as e:
+        print(f"Erro ao atualizar voluntario: {e}")
+        return jsonify({'error': 'Erro ao atualizar voluntario'}), 500
+    
+@app.route('/deletar-voluntario/<int:idVoluntario>', methods=['DELETE'])
+def deletar_voluntario(idVoluntario):
+    conexao = conectar_bd()
+    if not conexao:
+        return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
+
+    try:
+        cursor = conexao.cursor()
+        cursor.execute("DELETE FROM voluntarios WHERE idVoluntario = %s", (idVoluntario,))
+        conexao.commit()
+        cursor.close()
+        conexao.close()
+
+        return jsonify({'message': 'Voluntario excluído com sucesso!'}), 200
+    except Error as e:
+        print(f"Erro ao excluir voluntario: {e}")
+        return jsonify({'error': 'Erro ao excluir voluntario'}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)
